@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>浩然的博客 - blog of 浩然</title>
+    
+      <link rel="icon" href="/img/favicon.ico">
+    
+    <meta name="keyword"  content="">
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  <div class="loading-wrapper">
+    <div class="loading">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+  </div>
+  <div class="page">
+    <div class="head">
+      <header class="head-header">
+  <div class="head-authorH">
+    <a href="/" class="head-authorLink">
+      浩然的博客</a>
+    </div>
+  <div class="head-right">
+    <!-- <div class="head-search">
+      <input class="head-searchK"></input>
+      <span class="head-searchT">
+        </span>
+    </div> -->
+    <button class="barWrap" id="barWrap-toggle">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    <div class="head-about" id="head-about">
+      
+    </div>
+  </div>
+</header>
+    </div>
+    <div class="main">
+      <div class="barShow-head" id="barShow">
+  <ul class="barShow-ul">
+    
+      <li class="barShow-item">
+        <a href="/archives">
+          <span>Archives</span>
+        </a>
+      </li>
+    
+      <li class="barShow-item">
+        <a href="/categories/program">
+          <span>Program</span>
+        </a>
+      </li>
+    
+      <li class="barShow-item">
+        <a href="/categories/article">
+          <span>Article</span>
+        </a>
+      </li>
+    
+      <li class="barShow-item">
+        <a href="/">
+          <span>Tags</span>
+        </a>
+      </li>
+    
+    
+  </ul>
+</div>
+      <article class="post" id="post">
+  <header class="post-head">
+    <h1 class="post-title">
+      <a class="title" href="/2022/04/03/UI%E4%BC%98%E5%8C%96/">
+        UI优化
+      </a>
+    </h1>
+  </header>
+  <div class="post-datetag">
+    <div class="post-date">
+      <time class="post-time" title="2022-04-03 21:17:19" datetime="2022-04-03T13:17:19.000Z" itemprop="datePublished">
+  2022-04-03</time>
+    </div>
+    |
+    <div class="post-tag">
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/program/" rel="tag">program</a></li></ul>
+
+    </div>
+    |
+    <div class="post-visit">
+      <span id="busuanzi_container_page_pv">
+        <span id="busuanzi_value_page_pv"></span> hits
+      </span>
+    </div>
+  </div>
+
+  
+    <div class="post-word-count">
+      
+
+本文共2857字。
+
+    </div>
+  
+
+  
+    <div class="post-cc">
+      Copyright: 
+      
+        署名-非商业性使用-相同方式共享 | <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/2.5/cn/">CC BY-NC-SA 2.5 CN</a>
+      
+    </div>
+  
+
+  <div class="article-entry" itemprop="articleBody">
+    <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>笔者截止到写本篇博客为止，有两年在游戏公司开发Unity客户端的经历。工作内容偶尔会涉及到UI相关的业务逻辑，由于UI是游戏必不可少的部分，所以也会经常接触到UI的优化，以下简述一些UI优化的常用方法。</p>
+<h1 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h1><h2 id="01-raycast-勾选过多"><a href="#01-raycast-勾选过多" class="headerlink" title="01 | raycast 勾选过多"></a>01 | raycast 勾选过多</h2><p>通过UGUI的源码我们可以知道，UI事件会在EventSystem中Update的Process触发。UGUI会遍历屏幕中的RaycastTarget是true的UI,接着就会发射线，并且排序找到玩家最先触发的那个UI，再抛出事件给逻辑层去响应。</p>
+<p>团队多人在开发游戏界面，很多时候都是复制黏贴，比如上一个图片是需要响应RaycastTarget，然后ctrl+d以后复制出来的也就带了这个属性，很可能新复制出来的图片是不需要响应的，开发人员又没有取消勾选掉，这就出问题了。</p>
+<p>所以RaycastTarget如果被勾选的过多的话， 效率必然会低。所以我们应该想一个办法去解决它。</p>
+<p>把下面代码挂在游戏中的任意GameObject上，原理其实很简单就是绘制辅助线，当UI中RaycastTarget发生变化，SceneView中的蓝色辅助线也会刷新，还是挺方便的。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> UNITY_EDITOR</span></span><br><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="keyword">using</span> System.Collections;</span><br><span class="line"><span class="keyword">using</span> UnityEngine.UI;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">DebugUILine</span> : <span class="title">MonoBehaviour</span> &#123;</span><br><span class="line">	<span class="keyword">static</span> Vector3[] fourCorners = <span class="keyword">new</span> Vector3[<span class="number">4</span>];</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">bool</span> showLine = <span class="literal">false</span>;</span><br><span class="line">	<span class="function"><span class="keyword">void</span> <span class="title">OnDrawGizmos</span>()</span></span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">foreach</span> (MaskableGraphic g <span class="keyword">in</span> GameObject.FindObjectsOfType&lt;MaskableGraphic&gt;())</span><br><span class="line">		&#123;</span><br><span class="line">			<span class="keyword">if</span> (g.raycastTarget &amp;&amp; showLine)</span><br><span class="line">			&#123;</span><br><span class="line">				RectTransform rectTransform = g.transform <span class="keyword">as</span> RectTransform;</span><br><span class="line">				rectTransform.GetWorldCorners(fourCorners);</span><br><span class="line">				Gizmos.color = Color.blue;</span><br><span class="line">				<span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; <span class="number">4</span>; i++)</span><br><span class="line">					Gizmos.DrawLine(fourCorners[i], fourCorners[(i + <span class="number">1</span>) % <span class="number">4</span>]);</span><br><span class="line"> </span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>如下图所示，加上上面的脚本后，可以在scene试图中直接看到，蓝色框表示的就是勾选过RaycastTarget的UI。有了辅助框后，如下图所示，就可以很方便的把不需要响应的RaycastTarget去掉即可。</p>
+<p><img src="https://github.com/ayanamirei1997/img_blog/raw/main/raycast_line.png" alt="avatar"></p>
+<h2 id="02-避免频繁调用GameObject-SetActive"><a href="#02-避免频繁调用GameObject-SetActive" class="headerlink" title="02 | 避免频繁调用GameObject.SetActive"></a>02 | 避免频繁调用GameObject.SetActive</h2><p>如果你隐藏一个较大的UI界面，下面有很多子节点，也会有很大的开销.解决办法可以对频繁切换激活状态的<strong>UI采用平移出屏幕、修改Layer</strong>等方式来替换。另外也不要对Canvas做频繁的Enable操作，重新激活Canvas以及它的子Canvas，会执行重新构建（Rebuild） 以及重新批处理（Rebatch）操作。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 设置是否优化active</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Control:set_optimized_active</span><span class="params">(on)</span></span></span><br><span class="line">    <span class="comment">-- 如果开启，set_active(false)的行为不会真的SetActive(false)</span></span><br><span class="line">    <span class="comment">-- 而是把当前对象移到一个很远的地方，让UI相机不要去渲染这个窗口</span></span><br><span class="line">    <span class="built_in">self</span>.optimized_active = on</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Control:set_active</span><span class="params">(active)</span></span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">self</span>.optimized_active <span class="keyword">then</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> active <span class="keyword">then</span></span><br><span class="line">            <span class="built_in">self</span>.ori_pos = <span class="built_in">self</span>.game_object.transform.localPosition</span><br><span class="line">            <span class="built_in">self</span>.game_object.transform.localPosition = Vector3(<span class="number">-3000</span>, <span class="number">0</span>, <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">self</span>.ori_pos <span class="keyword">then</span></span><br><span class="line">                <span class="built_in">self</span>.game_object.transform.localPosition = <span class="built_in">self</span>.ori_pos</span><br><span class="line">            <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">end</span></span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    <span class="keyword">elseif</span> isValidObject(<span class="built_in">self</span>.game_object) <span class="keyword">then</span></span><br><span class="line">        <span class="built_in">self</span>.game_object:SetActive(active)</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="03-UI的布局"><a href="#03-UI的布局" class="headerlink" title="03 | UI的布局"></a>03 | UI的布局</h2><p>UI的布局层级不要太深入，要<strong>动静分离</strong>，可活动的元素放在一个Canvas下，不可活动的元素放在另一个Canvas下。虽然两个Canvas打断了合批，但是却减少了网格的重建时间，总体上是有优化的，所以一般建议每个较复杂的UI界面，都自成一个Canvas(可以是子Canvas)，在UI界面很复杂时，甚至要划分更多的子Canvas。但是，Canvas又不能细分的太多，因为会导致Draw Call的上升。</p>
+<h2 id="04-不要把image-button作为点击"><a href="#04-不要把image-button作为点击" class="headerlink" title="04 | 不要把image button作为点击"></a>04 | 不要把image button作为点击</h2><p>很多人在创建button时用很多不可见的Image作为交互响应的控件，这些image虽然被alpha被设置为0不可见，但是DrawCall依然存在<br>解决办法<strong>实现一个只在逻辑上响应Raycast但是不参与绘制的组件</strong>即可。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> UnityEngine;</span><br><span class="line"><span class="keyword">using</span> System.Collections;</span><br><span class="line"><span class="keyword">namespace</span> <span class="title">UnityEngine.UI</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Empty4Raycast</span> : <span class="title">MaskableGraphic</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="title">Empty4Raycast</span>()</span></span><br><span class="line">        &#123;</span><br><span class="line">            useLegacyMeshGeneration = <span class="literal">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnPopulateMesh</span>(<span class="params">VertexHelper toFill</span>)</span></span><br><span class="line">        &#123;</span><br><span class="line">            toFill.Clear();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="05-关于图集"><a href="#05-关于图集" class="headerlink" title="05 | 关于图集"></a>05 | 关于图集</h2><p>可以采用以下的几种方向来缩小图集的大小，降低加载解析的时间。</p>
+<ol>
+<li><strong>合理的按照模块分开打包图集</strong></li>
+<li><strong>压缩单个图片大小或者质量</strong></li>
+<li><strong>更紧密的打包图集方式</strong></li>
+<li><strong>重用素材</strong></li>
+</ol>
+<h2 id="06-镜像复制"><a href="#06-镜像复制" class="headerlink" title="06 | 镜像复制"></a>06 | 镜像复制</h2><p><img src="https://github.com/ayanamirei1997/img_blog/raw/main/mirror_1.jpg" alt="avatar"></p>
+<p>以上是皇室战争的一个场景，如果你对UI的素材敏感，你可能一眼就知道最下面的红色丝带将是你最不想见到的素材。尺寸大、纹理变化大（渐变）、曲线设计。这就表示了，这个红色丝带图不能使用压缩尺寸、压缩颜色丰富度和使用九宫缩放来减小图片大小。</p>
+<p>可是你再认真看看，你会发觉，它是左右对称的。对的，在游戏开发的时候，经常会遇到这种对称的UI素材。一般这种情况，我们只需要用其中一部分（1&#x2F;2,1&#x2F;4），然后使用镜像复制等，我们就可以把整个UI拼出来了。</p>
+<p>当然，这样做唯一的缺点就是三角面和顶点数的增加，不过大多数的情况下，增加不了多少，所以对性能影响并不大。</p>
+<p>首先，我们拿到我们的素材。然后进行1&#x2F;2、1&#x2F;4的裁切。</p>
+<p><img src="https://github.com/ayanamirei1997/img_blog/raw/main/mirror_2.jpg" alt="avatar"></p>
+<p>接下来就开始考虑用什么方法做镜像复制了。</p>
+<ul>
+<li>两个Image组件组合</li>
+<li>重写&#x2F;修改Image或者MaskableGraphic</li>
+<li>使用BaseMeshEffect扩展</li>
+</ul>
+<p>第一种方案最容易，不用修改任何代码，只需要使用两个Image，然后利用RectTransform进行位置和缩放就可以达到效果，然而这种做法每次修改时都需要繁琐的修改参数。</p>
+<p>第二种方案需要改动大量的代码，而且需要对Image的逻辑要有一定的理解。</p>
+<p>第三种方案，UI里面的Outline和Shadow组件就是使用BaseMeshEffect进行扩展的，BaseMeshEffect是对Graphic的顶点进行修改，而且可以实现动态添加和拆除。是UGUI原框架提供给我们扩展功能的方法。</p>
+<p>综合上面的优缺点，最后选择使用第三种的方案进行扩展是比较方便的。<br>首先是创建一个Mirror类，继承BaseMeshEffect，然后创建镜像类型的枚举值和相应的字段和变量。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">AddComponentMenu(<span class="string">&quot;UI/Effects/Mirror&quot;</span>, 20)</span>]</span><br><span class="line">[<span class="meta">RequireComponent(typeof(Graphic))</span>]</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">Mirror</span> : <span class="title">BaseMeshEffect</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="built_in">enum</span> MirrorType</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 水平</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        Horizontal, </span><br><span class="line"></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 垂直</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        Vertical,</span><br><span class="line"></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 四分之一</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> 相当于水平，然后再垂直</span></span><br><span class="line">        <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">        Quarter,</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> 镜像类型</span></span><br><span class="line">    <span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line">    [<span class="meta">SerializeField</span>]</span><br><span class="line">    <span class="keyword">private</span> MirrorType m_MirrorType = MirrorType.Horizontal;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> MirrorType mirrorType</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">get</span> &#123; <span class="keyword">return</span> m_MirrorType; &#125;</span><br><span class="line">        <span class="keyword">set</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (m_MirrorType != <span class="keyword">value</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                m_MirrorType = <span class="keyword">value</span>;</span><br><span class="line">                <span class="keyword">if</span>(graphic != <span class="literal">null</span>)&#123;</span><br><span class="line">                    graphic.SetVerticesDirty();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    [<span class="meta">NonSerialized</span>]</span><br><span class="line">    <span class="keyword">private</span> RectTransform m_RectTransform;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> RectTransform rectTransform</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">get</span> &#123; <span class="keyword">return</span> m_RectTransform ?? (m_RectTransform = GetComponent&lt;RectTransform&gt;()); &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来是创建一个SetNativeSize方法，这个方法跟Image.SetNativeSize()是一样的，都是根据原始的Sprite尺寸变更Image尺寸，只是这里会有一点不同，就是素材是裁切了一半的，我们要相应的把尺寸翻倍。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 设置原始尺寸</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">SetNativeSize</span>()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (graphic != <span class="literal">null</span> &amp;&amp; graphic <span class="keyword">is</span> Image)</span><br><span class="line">    &#123;</span><br><span class="line">        Sprite overrideSprite = (graphic <span class="keyword">as</span> Image).overrideSprite;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(overrideSprite != <span class="literal">null</span>)&#123;</span><br><span class="line">            <span class="built_in">float</span> w = overrideSprite.rect.width / (graphic <span class="keyword">as</span> Image).pixelsPerUnit;</span><br><span class="line">            <span class="built_in">float</span> h = overrideSprite.rect.height / (graphic <span class="keyword">as</span> Image).pixelsPerUnit;</span><br><span class="line">            rectTransform.anchorMax = rectTransform.anchorMin;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">switch</span> (m_MirrorType)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">case</span> MirrorType.Horizontal:</span><br><span class="line">                    rectTransform.sizeDelta = <span class="keyword">new</span> Vector2(w * <span class="number">2</span>, h);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MirrorType.Vertical:</span><br><span class="line">                    rectTransform.sizeDelta = <span class="keyword">new</span> Vector2(w, h * <span class="number">2</span>);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> MirrorType.Quarter:</span><br><span class="line">                    rectTransform.sizeDelta = <span class="keyword">new</span> Vector2(w * <span class="number">2</span>, h * <span class="number">2</span>);</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            graphic.SetVerticesDirty();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来是BaseMeshEffect的最重要的方法了————ModifyMesh()。这个方法会获得Image里面的顶点数据VertexHelper。 然后我们就可以对这个VertexHelper进行加工了。 首先使用VertexHelper.GetUIVertexStream()方法获取所有的顶点数据，然后调用相应的镜像处理函数，最后使用AddUIVertexTriangleStream()方法把顶点数据写入。 然后我们就开始对Simple类型的图像进行镜像操作。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">ModifyMesh</span>(<span class="params">VertexHelper vh</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> (!IsActive())</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> output = ListPool&lt;UIVertex&gt;.Get();</span><br><span class="line">    vh.GetUIVertexStream(output);</span><br><span class="line"></span><br><span class="line">    <span class="built_in">int</span> count = output.Count;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (graphic <span class="keyword">is</span> Image)</span><br><span class="line">    &#123;</span><br><span class="line">        Image.Type type = (graphic <span class="keyword">as</span> Image).type;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span> (type)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">case</span> Image.Type.Simple:</span><br><span class="line">                DrawSimple(output, count);</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> Image.Type.Sliced:</span><br><span class="line">                </span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> Image.Type.Tiled:</span><br><span class="line"></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> Image.Type.Filled:</span><br><span class="line"></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        DrawSimple(output, count);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    vh.Clear();</span><br><span class="line">    vh.AddUIVertexTriangleStream(output);</span><br><span class="line"></span><br><span class="line">    ListPool&lt;UIVertex&gt;.Recycle(output);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里引用了一个数组对象池的类：ListPool。由于可能会大量使用到List，所以使用对象池，有效减少内存分配 。你可以替换成自己的对象池，也可以使用本实例里面的ListPool。<br>本实例的ListPool与UGUI源码的ListPool逻辑是一样的，只是修改了部分命名。<br>然后是镜像的主要逻辑DrawSimple。 我们先来看看下面的图解，了解镜像的过程。</p>
+<p><img src="https://github.com/ayanamirei1997/img_blog/raw/main/mirror_3.jpg" alt="avatar"></p>
+<ul>
+<li><p>使用SetNativeSize()后，得到拉伸的图片。（步骤1）</p>
+</li>
+<li><p>接着调用graphic.GetPixelAdjustedRect()方法，获取当前Graphic矩形绘制范围，这个很重要，后面用来做顶点的偏移。</p>
+</li>
+<li><p>然后会调用SimpleScale()方法，将原始顶点进行缩放。（步骤2）</p>
+</li>
+<li><p>然后根据相应的镜像类型，进行不同的镜像操作。</p>
+</li>
+<li><p>镜像前先调用ExtendCapacity()对List进行扩容，例如水平镜像和垂直镜像是原来顶点数的两倍，四分之一镜像的顶点数是原来的四倍。</p>
+</li>
+<li><p>最后就是调用MirrorVerts()，这是对顶点进行复制和水平（垂直）翻转的函数。（步骤3）</p>
+</li>
+</ul>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> 绘制简单版</span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;/summary&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name=&quot;output&quot;&gt;</span><span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line"><span class="comment"><span class="doctag">///</span> <span class="doctag">&lt;param name=&quot;count&quot;&gt;</span><span class="doctag">&lt;/param&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">DrawSimple</span>(<span class="params">List&lt;UIVertex&gt; output, <span class="built_in">int</span> count</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    Rect rect = graphic.GetPixelAdjustedRect();</span><br><span class="line"></span><br><span class="line">    SimpleScale(rect, output, count);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span> (m_MirrorType)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> MirrorType.Horizontal:</span><br><span class="line">            ExtendCapacity(output, count);</span><br><span class="line">            MirrorVerts(rect, output, count, <span class="literal">true</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MirrorType.Vertical:</span><br><span class="line">            ExtendCapacity(output, count);</span><br><span class="line">            MirrorVerts(rect, output, count, <span class="literal">false</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> MirrorType.Quarter:</span><br><span class="line">            ExtendCapacity(output, count * <span class="number">3</span>);</span><br><span class="line">            MirrorVerts(rect, output, count, <span class="literal">true</span>);</span><br><span class="line">            MirrorVerts(rect, output, count * <span class="number">2</span>, <span class="literal">false</span>);</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>List扩容只是判断一下容器大小，然后赋值就行了。这是减少多次List<T>.Add()可能出现的性能消耗。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">ExtendCapacity</span>(<span class="params">List&lt;UIVertex&gt; verts, <span class="built_in">int</span> addCount</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">var</span> neededCapacity = verts.Count + addCount;</span><br><span class="line">    <span class="keyword">if</span> (verts.Capacity &lt; neededCapacity)</span><br><span class="line">    &#123;</span><br><span class="line">        verts.Capacity = neededCapacity;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后是原始顶点的缩放了，看了上面的步骤图，步骤2是把所有顶点往左边挤，其实就是顶点横坐标相对于绘制区最左边宽度减半。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">SimpleScale</span>(<span class="params">Rect rect, List&lt;UIVertex&gt; verts, <span class="built_in">int</span> count</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; count; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        UIVertex vertex = verts[i];</span><br><span class="line"></span><br><span class="line">        Vector3 position = vertex.position;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (m_MirrorType == MirrorType.Horizontal || m_MirrorType == MirrorType.Quarter)</span><br><span class="line">        &#123;</span><br><span class="line">            position.x = (position.x + rect.x) * <span class="number">0.5f</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (m_MirrorType == MirrorType.Vertical || m_MirrorType == MirrorType.Quarter)</span><br><span class="line">        &#123;</span><br><span class="line">            position.y = (position.y + rect.y) * <span class="number">0.5f</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        vertex.position = position;</span><br><span class="line"></span><br><span class="line">        verts[i] = vertex;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>减半的核心算法就是这两条</p>
+<p>$position.x &#x3D; (position.x + rect.x) * 0.5f;$</p>
+<p>$position.y &#x3D; (position.y + rect.y) * 0.5f;$</p>
+<p>然后把顶点复制一份，以rect.center为对称轴，进行翻转，就可以把右边的部分绘制出来了。 根据参数isHorizontal判断是水平还是垂直翻转。</p>
+<figure class="highlight c#"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">MirrorVerts</span>(<span class="params">Rect rect, List&lt;UIVertex&gt; verts, <span class="built_in">int</span> count, <span class="built_in">bool</span> isHorizontal = <span class="literal">true</span></span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="built_in">int</span> i = <span class="number">0</span>; i &lt; count; i++)</span><br><span class="line">    &#123;</span><br><span class="line">        UIVertex vertex = verts[i];</span><br><span class="line"></span><br><span class="line">        Vector3 position = vertex.position;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (isHorizontal)</span><br><span class="line">        &#123;</span><br><span class="line">            position.x = rect.center.x * <span class="number">2</span> - position.x;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            position.y = rect.center.y * <span class="number">2</span> - position.y;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        vertex.position = position;</span><br><span class="line"></span><br><span class="line">        verts.Add(vertex);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>水平（垂直）翻转的核心算法就是这两条</p>
+<p>$position.x &#x3D; rect.center.x * 2 - postion.x;$</p>
+<p>$position.y &#x3D; rect.center.y * 2 - postion.y;$</p>
+<p>根据上面的代码，垂直和1&#x2F;4镜像也是没问题的。 1&#x2F;4镜像的做法就是先垂直（水平）镜像复制，然后再水平（垂直）复制完成。</p>
+<p><img src="https://github.com/ayanamirei1997/img_blog/raw/main/mirror_4.jpg" alt="avatar"></p>
+<p>好了，Simple的镜像类就完成了。</p>
+
+  </div>
+</article>
+
+    <aside class="post-widget">
+        <nav class="post-toc-wrap" id="post-toc">
+            <h4>TOC</h4>
+            <ol class="post-toc"><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#%E5%89%8D%E8%A8%80"><span class="post-toc-number">1.</span> <span class="post-toc-text">前言</span></a></li><li class="post-toc-item post-toc-level-1"><a class="post-toc-link" href="#%E5%86%85%E5%AE%B9"><span class="post-toc-number">2.</span> <span class="post-toc-text">内容</span></a><ol class="post-toc-child"><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#01-raycast-%E5%8B%BE%E9%80%89%E8%BF%87%E5%A4%9A"><span class="post-toc-number">2.1.</span> <span class="post-toc-text">01 | raycast 勾选过多</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#02-%E9%81%BF%E5%85%8D%E9%A2%91%E7%B9%81%E8%B0%83%E7%94%A8GameObject-SetActive"><span class="post-toc-number">2.2.</span> <span class="post-toc-text">02 | 避免频繁调用GameObject.SetActive</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#03-UI%E7%9A%84%E5%B8%83%E5%B1%80"><span class="post-toc-number">2.3.</span> <span class="post-toc-text">03 | UI的布局</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#04-%E4%B8%8D%E8%A6%81%E6%8A%8Aimage-button%E4%BD%9C%E4%B8%BA%E7%82%B9%E5%87%BB"><span class="post-toc-number">2.4.</span> <span class="post-toc-text">04 | 不要把image button作为点击</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#05-%E5%85%B3%E4%BA%8E%E5%9B%BE%E9%9B%86"><span class="post-toc-number">2.5.</span> <span class="post-toc-text">05 | 关于图集</span></a></li><li class="post-toc-item post-toc-level-2"><a class="post-toc-link" href="#06-%E9%95%9C%E5%83%8F%E5%A4%8D%E5%88%B6"><span class="post-toc-number">2.6.</span> <span class="post-toc-text">06 | 镜像复制</span></a></li></ol></li></ol>
+        </nav>
+    </aside>
+   
+
+    </div>
+    <footer class="footer-nav">
+      <div class="footer">
+        <div class="back-top" id="back-top" title="Back to top">
+          <i class="icon icon-chevron-bar-up"></i>
+        </div>
+        <span class="footer-msg">
+  
+  <div>
+    <span id="busuanzi_container_site_pv">
+      <span id="busuanzi_value_site_pv"></span> PV
+    </span>
+    <span id="busuanzi_container_site_uv">
+      <span id="busuanzi_value_site_uv"></span> UV
+    </span>
+  </div>
+  2022
+  
+  
+  Copy Right © https://github.com/ayanamirei1997.
+  Power by
+  <a href="https://hexo.io/" target="_blank" rel="external nofollow">Hexo</a>
+  and
+  <a href="https://github.com/Cerallin/hexo-theme-yuzu"
+      target="_blank" rel="external nofollow" title="v2.1">
+    Theme Yuzu</a>.
+</span>
+
+      </div>
+    </footer>
+    
+
+
+<script src="/js/clipboard/clipboard.min.js"></script>
+
+
+<script src="/js/theme.js"></script>
+
+
+<script src="/js/index.js"></script>
+
+
+
+
+  </div>
+</body>
